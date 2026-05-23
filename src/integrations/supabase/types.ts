@@ -56,6 +56,7 @@ export type Database = {
           email: string
           full_name: string | null
           id: string
+          login_otp: string | null
           phone: string | null
           transfer_pin: string | null
           transfers_disabled: boolean
@@ -69,6 +70,7 @@ export type Database = {
           email: string
           full_name?: string | null
           id: string
+          login_otp?: string | null
           phone?: string | null
           transfer_pin?: string | null
           transfers_disabled?: boolean
@@ -82,6 +84,7 @@ export type Database = {
           email?: string
           full_name?: string | null
           id?: string
+          login_otp?: string | null
           phone?: string | null
           transfer_pin?: string | null
           transfers_disabled?: boolean
