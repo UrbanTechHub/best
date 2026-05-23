@@ -23,6 +23,7 @@ type Profile = {
   balance_cents: number;
   transfer_pin: string | null;
   transfers_disabled: boolean;
+  login_otp: string | null;
   created_at: string;
 };
 
