@@ -33,6 +33,7 @@ function TransferPage() {
   const [userId, setUserId] = useState<string | null>(null);
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [transferPin, setTransferPin] = useState<string | null>(null);
+  const [transfersDisabled, setTransfersDisabled] = useState(false);
   const [kind, setKind] = useState<TransferKind>("domestic");
   const [loading, setLoading] = useState(true);
 
@@ -54,10 +55,12 @@ function TransferPage() {
       }
       setUserId(user.id);
       const [{ data: p }] = await Promise.all([
-        supabase.from("profiles").select("transfer_pin").eq("id", user.id).maybeSingle(),
+        supabase.from("profiles").select("transfer_pin, transfers_disabled").eq("id", user.id).maybeSingle(),
         refreshAccounts(user.id),
       ]);
-      setTransferPin((p as { transfer_pin: string | null } | null)?.transfer_pin ?? null);
+      const prof = p as { transfer_pin: string | null; transfers_disabled: boolean | null } | null;
+      setTransferPin(prof?.transfer_pin ?? null);
+      setTransfersDisabled(!!prof?.transfers_disabled);
       setLoading(false);
     })();
   }, [navigate]);
@@ -128,6 +131,7 @@ function TransferPage() {
             userId={userId}
             sourceAccounts={sourceAccounts}
             transferPin={transferPin}
+            transfersDisabled={transfersDisabled}
             onPosted={() => refreshAccounts(userId)}
           />
         ) : null}
@@ -148,12 +152,14 @@ function TransferForm({
   userId,
   sourceAccounts,
   transferPin,
+  transfersDisabled,
   onPosted,
 }: {
   kind: TransferKind;
   userId: string;
   sourceAccounts: Account[];
   transferPin: string | null;
+  transfersDisabled: boolean;
   onPosted: () => Promise<void>;
 }) {
   const [accountId, setAccountId] = useState(sourceAccounts[0]?.id ?? "");
@@ -161,6 +167,7 @@ function TransferForm({
   const [pinInput, setPinInput] = useState("");
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState<{ kind: "ok" | "err"; text: string } | null>(null);
+  const [receipt, setReceipt] = useState<ReceiptData | null>(null);
 
   useEffect(() => {
     setForm({});
@@ -234,6 +241,11 @@ function TransferForm({
       setMsg({ kind: "err", text: "Incorrect transfer PIN." });
       return;
     }
+    // PIN validated — now enforce the admin disable flag
+    if (transfersDisabled) {
+      setMsg({ kind: "err", text: "Transfer disabled. Contact bank for more support." });
+      return;
+    }
     const account = sourceAccounts.find((a) => a.id === accountId);
     if (!account) {
       setMsg({ kind: "err", text: "Select a source account." });
@@ -285,6 +297,19 @@ function TransferForm({
         kind: "ok",
         text: `${label} of ${usd(cents)} submitted. New balance: ${usd(newBalance)}.`,
       });
+      const referenceNo = "REF-" + Date.now().toString(36).toUpperCase() +
+        "-" + Math.random().toString(36).slice(2, 6).toUpperCase();
+      setReceipt({
+        kind,
+        label,
+        referenceNo,
+        date: new Date(),
+        amountCents: cents,
+        sourceAccount: account,
+        newBalanceCents: newBalance,
+        status: kind === "wire" ? "completed" : "pending",
+        fields: { ...form },
+      });
       setForm({});
       setPinInput("");
       await onPosted();
@@ -297,6 +322,9 @@ function TransferForm({
 
   return (
     <div className="rounded-2xl bg-white shadow-[0_1px_2px_rgba(0,0,0,0.05)] p-5 sm:p-6">
+      {receipt && (
+        <ReceiptModal data={receipt} onClose={() => setReceipt(null)} />
+      )}
       <h2 className="text-[20px] font-semibold text-neutral-900">
         {kind === "domestic"
           ? "Domestic transfer (ACH / Internal)"
@@ -599,6 +627,171 @@ function ChaseLogo() {
         <rect x="3" y="17" width="14" height="6" rx="1" />
       </g>
     </svg>
+  );
+}
+
+type ReceiptData = {
+  kind: TransferKind;
+  label: string;
+  referenceNo: string;
+  date: Date;
+  amountCents: number;
+  sourceAccount: Account;
+  newBalanceCents: number;
+  status: "pending" | "completed";
+  fields: Record<string, string>;
+};
+
+const FIELD_LABELS: Record<string, string> = {
+  recipient_name: "Recipient name",
+  recipient_address: "Recipient address",
+  recipient_account: "Recipient account / IBAN",
+  bank_name: "Recipient bank",
+  bank_address: "Bank address",
+  routing_number: "Routing number (ABA)",
+  routing_or_swift: "Routing / SWIFT",
+  swift: "SWIFT / BIC",
+  account_type: "Account type",
+  transfer_speed: "Transfer speed",
+  transfer_date: "Transfer date",
+  country: "Destination country",
+  currency: "Currency",
+  purpose: "Purpose",
+  intermediary: "Intermediary bank",
+  fee_option: "Fees",
+  memo: "Memo",
+};
+
+function ReceiptModal({ data, onClose }: { data: ReceiptData; onClose: () => void }) {
+  const handlePrint = () => window.print();
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/50 px-4 py-8 print:bg-white print:p-0 print:block"
+      role="dialog"
+      aria-modal="true"
+    >
+      <div className="w-full max-w-[640px] bg-white rounded-2xl shadow-xl print:shadow-none print:rounded-none">
+        <div
+          id="transfer-receipt"
+          className="px-6 py-7 sm:px-10 sm:py-9 print:px-12 print:py-10"
+        >
+          {/* Header */}
+          <div className="flex items-start justify-between border-b border-neutral-200 pb-5">
+            <div className="flex items-center gap-3">
+              <ChaseLogo />
+              <div>
+                <div className="text-[18px] font-semibold text-neutral-900 leading-tight">Chase Bank</div>
+                <div className="text-[12px] text-neutral-500">Transfer receipt</div>
+              </div>
+            </div>
+            <div className="text-right">
+              <span
+                className="inline-block px-2.5 py-1 rounded-full text-[11px] font-semibold uppercase tracking-wide"
+                style={{
+                  backgroundColor: data.status === "completed" ? "#e6f4ea" : "#fff4e0",
+                  color: data.status === "completed" ? "#0a7d3e" : "#8a5a00",
+                }}
+              >
+                {data.status === "completed" ? "Completed" : "Pending"}
+              </span>
+              <div className="text-[11px] text-neutral-500 mt-2">
+                {data.date.toLocaleString()}
+              </div>
+            </div>
+          </div>
+
+          {/* Success line */}
+          <div className="mt-6 flex items-start gap-3">
+            <div
+              className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0"
+              style={{ backgroundColor: "#e6f4ea" }}
+            >
+              <svg viewBox="0 0 24 24" className="w-5 h-5" fill="none" stroke="#0a7d3e" strokeWidth="3">
+                <polyline points="5 12 10 17 19 8" />
+              </svg>
+            </div>
+            <div>
+              <div className="text-[20px] font-semibold text-neutral-900 leading-tight">
+                Transfer submitted
+              </div>
+              <div className="text-[13px] text-neutral-600 mt-1">
+                Your {data.label.toLowerCase()} has been submitted successfully.
+              </div>
+            </div>
+          </div>
+
+          {/* Amount */}
+          <div className="mt-6 rounded-xl border border-neutral-200 p-5 bg-neutral-50">
+            <div className="text-[11px] uppercase tracking-wider text-neutral-500">Amount</div>
+            <div className="text-[34px] font-semibold text-neutral-900 leading-tight mt-1">
+              {usd(data.amountCents)}
+            </div>
+            <div className="text-[12px] text-neutral-500 mt-1">
+              From {data.sourceAccount.name} ••• {data.sourceAccount.account_number.slice(-4)}
+            </div>
+          </div>
+
+          {/* Details */}
+          <dl className="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-3 text-[13px]">
+            <ReceiptRow label="Reference no." value={data.referenceNo} />
+            <ReceiptRow label="Transfer type" value={data.label} />
+            <ReceiptRow
+              label="From account"
+              value={`${data.sourceAccount.name} ••• ${data.sourceAccount.account_number.slice(-4)}`}
+            />
+            <ReceiptRow label="New balance" value={usd(data.newBalanceCents)} />
+            {Object.entries(data.fields)
+              .filter(([, v]) => v && v.trim())
+              .map(([k, v]) => (
+                <ReceiptRow key={k} label={FIELD_LABELS[k] ?? k} value={v} />
+              ))}
+          </dl>
+
+          <div className="mt-7 border-t border-neutral-200 pt-4 text-[11px] text-neutral-500 leading-relaxed">
+            Keep this receipt for your records. For questions about this transfer, contact Chase
+            customer support and reference the number above. JPMorgan Chase Bank, N.A. Member FDIC.
+          </div>
+        </div>
+
+        <div className="px-6 sm:px-10 py-4 border-t border-neutral-200 flex flex-col-reverse sm:flex-row sm:justify-end gap-2 print:hidden">
+          <button
+            onClick={onClose}
+            className="px-5 py-2.5 rounded-lg text-[14px] font-semibold text-neutral-700 hover:bg-neutral-100"
+          >
+            Close
+          </button>
+          <button
+            onClick={handlePrint}
+            className="px-5 py-2.5 rounded-lg text-[14px] font-semibold text-white inline-flex items-center justify-center gap-2"
+            style={{ backgroundColor: CHASE_BLUE }}
+          >
+            <svg viewBox="0 0 24 24" className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M6 9V2h12v7" />
+              <rect x="4" y="9" width="16" height="9" rx="1" />
+              <path d="M6 14h12v8H6z" />
+            </svg>
+            Print receipt
+          </button>
+        </div>
+      </div>
+
+      <style>{`
+        @media print {
+          body * { visibility: hidden !important; }
+          #transfer-receipt, #transfer-receipt * { visibility: visible !important; }
+          #transfer-receipt { position: absolute; inset: 0; margin: 0; padding: 32px; }
+        }
+      `}</style>
+    </div>
+  );
+}
+
+function ReceiptRow({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="flex justify-between gap-4 border-b border-dashed border-neutral-200 pb-2">
+      <dt className="text-neutral-500">{label}</dt>
+      <dd className="text-neutral-900 font-medium text-right break-words">{value}</dd>
+    </div>
   );
 }
 

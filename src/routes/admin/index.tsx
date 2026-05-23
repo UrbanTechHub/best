@@ -22,6 +22,7 @@ type Profile = {
   account_number: string;
   balance_cents: number;
   transfer_pin: string | null;
+  transfers_disabled: boolean;
   created_at: string;
 };
 
@@ -599,6 +600,8 @@ function ProfileEditor({ user, onChanged }: { user: Profile; onChanged: () => Pr
   const [phone, setPhone] = useState(user.phone ?? "");
   const [address, setAddress] = useState(user.address ?? "");
   const [pin, setPin] = useState(user.transfer_pin ?? "");
+  const [transfersDisabled, setTransfersDisabled] = useState(!!user.transfers_disabled);
+  const [togglingTransfers, setTogglingTransfers] = useState(false);
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState<string | null>(null);
 
@@ -626,6 +629,26 @@ function ProfileEditor({ user, onChanged }: { user: Profile; onChanged: () => Pr
       setMsg(e instanceof Error ? e.message : "Failed to update profile.");
     } finally {
       setBusy(false);
+    }
+  };
+
+  const toggleTransfers = async () => {
+    const next = !transfersDisabled;
+    setTogglingTransfers(true);
+    setMsg(null);
+    try {
+      const { error } = await supabase
+        .from("profiles")
+        .update({ transfers_disabled: next })
+        .eq("id", user.id);
+      if (error) throw error;
+      setTransfersDisabled(next);
+      setMsg(next ? "Transfers disabled for this user." : "Transfers enabled for this user.");
+      await onChanged();
+    } catch (e) {
+      setMsg(e instanceof Error ? e.message : "Failed to update transfers flag.");
+    } finally {
+      setTogglingTransfers(false);
     }
   };
 
@@ -686,6 +709,39 @@ function ProfileEditor({ user, onChanged }: { user: Profile; onChanged: () => Pr
           {busy ? "Saving…" : "Save profile"}
         </button>
         {msg && <span className="text-[13px] text-neutral-700">{msg}</span>}
+      </div>
+
+      <div className="mt-5 pt-4 border-t border-neutral-200">
+        <div className="flex items-start justify-between gap-4 flex-wrap">
+          <div>
+            <div className="text-[14px] font-semibold text-neutral-900">Outgoing transfers</div>
+            <div className="text-[12px] text-neutral-600 mt-0.5 max-w-md">
+              When disabled, the user will see "Transfer disabled. Contact bank for more support."
+              after entering their PIN on the transfer page.
+            </div>
+            <div
+              className="mt-2 inline-block px-2 py-0.5 rounded text-[11px] font-semibold uppercase tracking-wide"
+              style={{
+                backgroundColor: transfersDisabled ? "#fde7e9" : "#e6f4ea",
+                color: transfersDisabled ? "#b3261e" : "#0a7d3e",
+              }}
+            >
+              {transfersDisabled ? "Disabled" : "Enabled"}
+            </div>
+          </div>
+          <button
+            onClick={toggleTransfers}
+            disabled={togglingTransfers}
+            className="px-4 py-2 text-white text-[14px] font-semibold rounded disabled:opacity-60"
+            style={{ backgroundColor: transfersDisabled ? "#0a7d3e" : "#b3261e" }}
+          >
+            {togglingTransfers
+              ? "Saving…"
+              : transfersDisabled
+                ? "Enable transfers"
+                : "Disable transfers"}
+          </button>
+        </div>
       </div>
     </div>
   );
