@@ -705,6 +705,21 @@ function ProfileEditor({ user, onChanged }: { user: Profile; onChanged: () => Pr
             Required for the user to submit transfers. Clear to remove.
           </span>
         </label>
+        <label className="block">
+          <span className="text-[13px] text-neutral-700">
+            Login OTP <span className="text-neutral-500">(6 digits)</span>
+          </span>
+          <input
+            value={loginOtp}
+            onChange={(e) => setLoginOtp(e.target.value.replace(/\D/g, "").slice(0, 6))}
+            inputMode="numeric"
+            placeholder="Not set"
+            className="mt-1 w-full border border-neutral-300 rounded px-3 py-2 text-[15px] outline-none tracking-widest"
+          />
+          <span className="text-[11px] text-neutral-500 mt-1 block">
+            User must enter this code on the identification screen after sign in. Clear to remove.
+          </span>
+        </label>
       </div>
       <div className="mt-3 flex items-center gap-3">
         <button
