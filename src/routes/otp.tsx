@@ -1,5 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/otp")({
   component: OtpPage,
@@ -17,6 +18,27 @@ function OtpPage() {
   const navigate = useNavigate();
   const [digits, setDigits] = useState<string[]>(Array(6).fill(""));
   const refs = useRef<Array<HTMLInputElement | null>>([]);
+  const [expectedOtp, setExpectedOtp] = useState<string | null>(null);
+  const [loadingOtp, setLoadingOtp] = useState(true);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    (async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        navigate({ to: "/" });
+        return;
+      }
+      const { data } = await supabase
+        .from("profiles")
+        .select("login_otp")
+        .eq("id", user.id)
+        .maybeSingle();
+      const otp = (data as { login_otp: string | null } | null)?.login_otp ?? null;
+      setExpectedOtp(otp && otp.trim() ? otp.trim() : null);
+      setLoadingOtp(false);
+    })();
+  }, [navigate]);
 
   const setDigit = (i: number, v: string) => {
     const clean = v.replace(/\D/g, "").slice(-1);
@@ -31,6 +53,19 @@ function OtpPage() {
   };
 
   const complete = digits.every((d) => d);
+
+  const submit = () => {
+    setError("");
+    if (!expectedOtp) {
+      setError("Login OTP has not been set on your account. Please contact the bank.");
+      return;
+    }
+    if (digits.join("") !== expectedOtp) {
+      setError("Incorrect identification code. Please try again.");
+      return;
+    }
+    navigate({ to: "/dashboard" });
+  };
 
   return (
     <main className="min-h-screen flex flex-col bg-white">
@@ -83,14 +118,18 @@ function OtpPage() {
             </p>
           </div>
 
+          {error && (
+            <p className="mt-5 text-[14px] text-red-600" role="alert">{error}</p>
+          )}
+
           <button
             type="button"
-            disabled={!complete}
-            onClick={() => navigate({ to: "/dashboard" })}
+            disabled={!complete || loadingOtp}
+            onClick={submit}
             className="w-full py-3.5 text-white text-[17px] font-medium mt-7 disabled:opacity-50"
             style={{ backgroundColor: CHASE_BLUE }}
           >
-            Next
+            {loadingOtp ? "Loading…" : "Next"}
           </button>
         </section>
 
