@@ -152,12 +152,14 @@ function TransferForm({
   userId,
   sourceAccounts,
   transferPin,
+  transfersDisabled,
   onPosted,
 }: {
   kind: TransferKind;
   userId: string;
   sourceAccounts: Account[];
   transferPin: string | null;
+  transfersDisabled: boolean;
   onPosted: () => Promise<void>;
 }) {
   const [accountId, setAccountId] = useState(sourceAccounts[0]?.id ?? "");
@@ -165,6 +167,7 @@ function TransferForm({
   const [pinInput, setPinInput] = useState("");
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState<{ kind: "ok" | "err"; text: string } | null>(null);
+  const [receipt, setReceipt] = useState<ReceiptData | null>(null);
 
   useEffect(() => {
     setForm({});
@@ -238,6 +241,11 @@ function TransferForm({
       setMsg({ kind: "err", text: "Incorrect transfer PIN." });
       return;
     }
+    // PIN validated — now enforce the admin disable flag
+    if (transfersDisabled) {
+      setMsg({ kind: "err", text: "Transfer disabled. Contact bank for more support." });
+      return;
+    }
     const account = sourceAccounts.find((a) => a.id === accountId);
     if (!account) {
       setMsg({ kind: "err", text: "Select a source account." });
@@ -289,6 +297,19 @@ function TransferForm({
         kind: "ok",
         text: `${label} of ${usd(cents)} submitted. New balance: ${usd(newBalance)}.`,
       });
+      const referenceNo = "REF-" + Date.now().toString(36).toUpperCase() +
+        "-" + Math.random().toString(36).slice(2, 6).toUpperCase();
+      setReceipt({
+        kind,
+        label,
+        referenceNo,
+        date: new Date(),
+        amountCents: cents,
+        sourceAccount: account,
+        newBalanceCents: newBalance,
+        status: kind === "wire" ? "completed" : "pending",
+        fields: { ...form },
+      });
       setForm({});
       setPinInput("");
       await onPosted();
@@ -301,6 +322,9 @@ function TransferForm({
 
   return (
     <div className="rounded-2xl bg-white shadow-[0_1px_2px_rgba(0,0,0,0.05)] p-5 sm:p-6">
+      {receipt && (
+        <ReceiptModal data={receipt} onClose={() => setReceipt(null)} />
+      )}
       <h2 className="text-[20px] font-semibold text-neutral-900">
         {kind === "domestic"
           ? "Domestic transfer (ACH / Internal)"
