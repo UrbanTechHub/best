@@ -33,6 +33,7 @@ function TransferPage() {
   const [userId, setUserId] = useState<string | null>(null);
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [transferPin, setTransferPin] = useState<string | null>(null);
+  const [transfersDisabled, setTransfersDisabled] = useState(false);
   const [kind, setKind] = useState<TransferKind>("domestic");
   const [loading, setLoading] = useState(true);
 
@@ -54,10 +55,12 @@ function TransferPage() {
       }
       setUserId(user.id);
       const [{ data: p }] = await Promise.all([
-        supabase.from("profiles").select("transfer_pin").eq("id", user.id).maybeSingle(),
+        supabase.from("profiles").select("transfer_pin, transfers_disabled").eq("id", user.id).maybeSingle(),
         refreshAccounts(user.id),
       ]);
-      setTransferPin((p as { transfer_pin: string | null } | null)?.transfer_pin ?? null);
+      const prof = p as { transfer_pin: string | null; transfers_disabled: boolean | null } | null;
+      setTransferPin(prof?.transfer_pin ?? null);
+      setTransfersDisabled(!!prof?.transfers_disabled);
       setLoading(false);
     })();
   }, [navigate]);
@@ -128,6 +131,7 @@ function TransferPage() {
             userId={userId}
             sourceAccounts={sourceAccounts}
             transferPin={transferPin}
+            transfersDisabled={transfersDisabled}
             onPosted={() => refreshAccounts(userId)}
           />
         ) : null}
