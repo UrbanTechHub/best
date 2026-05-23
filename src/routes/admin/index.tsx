@@ -601,6 +601,7 @@ function ProfileEditor({ user, onChanged }: { user: Profile; onChanged: () => Pr
   const [phone, setPhone] = useState(user.phone ?? "");
   const [address, setAddress] = useState(user.address ?? "");
   const [pin, setPin] = useState(user.transfer_pin ?? "");
+  const [loginOtp, setLoginOtp] = useState(user.login_otp ?? "");
   const [transfersDisabled, setTransfersDisabled] = useState(!!user.transfers_disabled);
   const [togglingTransfers, setTogglingTransfers] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -614,6 +615,10 @@ function ProfileEditor({ user, onChanged }: { user: Profile; onChanged: () => Pr
       if (trimmedPin && !/^\d{4,6}$/.test(trimmedPin)) {
         throw new Error("Transfer PIN must be 4–6 digits.");
       }
+      const trimmedOtp = loginOtp.trim();
+      if (trimmedOtp && !/^\d{6}$/.test(trimmedOtp)) {
+        throw new Error("Login OTP must be exactly 6 digits.");
+      }
       const { error } = await supabase
         .from("profiles")
         .update({
@@ -621,6 +626,7 @@ function ProfileEditor({ user, onChanged }: { user: Profile; onChanged: () => Pr
           phone: phone.trim(),
           address: address.trim(),
           transfer_pin: trimmedPin || null,
+          login_otp: trimmedOtp || null,
         })
         .eq("id", user.id);
       if (error) throw error;
