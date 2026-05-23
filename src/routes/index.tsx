@@ -46,6 +46,14 @@ function Index() {
           onSubmit={onSubmit}
           className="bg-white shadow-md px-5 sm:px-7 pt-6 pb-6 -mt-[28vh] sm:-mt-[32vh] relative z-10"
         >
+          <div className="flex justify-center mb-6">
+            <img 
+              src="https://i.ibb.co/MkbNWjmv/images-10-removebg-preview-1.png" 
+              alt="Logo" 
+              className="h-16 w-auto"
+            />
+          </div>
+
           <label className="block">
             <span className="text-[15px] text-neutral-700">Enter your email</span>
             <div className="flex items-end gap-2 border-b border-neutral-400 pb-1.5 mt-2">
