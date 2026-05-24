@@ -34,26 +34,60 @@ if (fs.existsSync(shellPath) && !fs.existsSync(indexPath)) {
   console.log("Created dist/client/index.html from SPA shell");
 }
 
-// Print summary of what was generated
-const htmlFiles = [];
-function walk(dir) {
-  for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
-    const p = path.join(dir, entry.name);
-    if (entry.isDirectory()) walk(p);
-    else if (entry.name.endsWith(".html")) htmlFiles.push(path.relative(DIST, p));
+// Move dist/client/* up to dist/ for a flat static-host output
+function copyDir(src, dest) {
+  fs.mkdirSync(dest, { recursive: true });
+  for (const entry of fs.readdirSync(src, { withFileTypes: true })) {
+    const srcPath = path.join(src, entry.name);
+    const destPath = path.join(dest, entry.name);
+    if (entry.isDirectory()) {
+      copyDir(srcPath, destPath);
+    } else {
+      fs.copyFileSync(srcPath, destPath);
+    }
   }
 }
-walk(DIST_CLIENT);
 
-console.log("\nStatic build complete. Files ready in dist/client/\n");
+// Wipe old dist root contents (except client/ and server/) to avoid stale files
+for (const entry of fs.readdirSync(DIST, { withFileTypes: true })) {
+  if (entry.name === "client" || entry.name === "server") continue;
+  const p = path.join(DIST, entry.name);
+  if (entry.isDirectory()) fs.rmSync(p, { recursive: true });
+  else fs.unlinkSync(p);
+}
+
+// Copy client contents to dist root
+copyDir(DIST_CLIENT, DIST);
+
+// Remove server build since it's not needed for static hosting
+const serverDir = path.join(DIST, "server");
+if (fs.existsSync(serverDir)) {
+  fs.rmSync(serverDir, { recursive: true });
+}
+
+// Print summary of what was generated
+const htmlFiles = [];
+function walk(dir, prefix) {
+  for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+    const p = path.join(dir, entry.name);
+    if (entry.isDirectory()) walk(p, prefix);
+    else if (entry.name.endsWith(".html")) {
+      htmlFiles.push(path.relative(DIST, p));
+    }
+  }
+}
+walk(DIST, DIST);
+
+console.log("\nStatic build complete. Output is in dist/\n");
 console.log("HTML pages:");
 for (const f of htmlFiles.sort()) {
   console.log("  " + f);
 }
 console.log("\nAssets:");
-const assetsDir = path.join(DIST_CLIENT, "assets");
+const assetsDir = path.join(DIST, "assets");
 if (fs.existsSync(assetsDir)) {
   for (const f of fs.readdirSync(assetsDir).sort()) {
     console.log("  assets/" + f);
   }
 }
+console.log("\nTo preview: npx serve dist");
