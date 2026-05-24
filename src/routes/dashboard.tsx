@@ -2,6 +2,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { signOut } from "@/lib/auth";
+import { useForceLogoutGuard } from "@/lib/use-force-logout-guard";
 
 export const Route = createFileRoute("/dashboard")({
   component: Dashboard,
@@ -45,6 +46,7 @@ const usd = (cents: number) =>
 
 function Dashboard() {
   const navigate = useNavigate();
+  useForceLogoutGuard();
   const [profile, setProfile] = useState<Profile | null>(null);
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [txns, setTxns] = useState<Txn[]>([]);

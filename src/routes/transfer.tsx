@@ -1,6 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { useForceLogoutGuard } from "@/lib/use-force-logout-guard";
 
 export const Route = createFileRoute("/transfer")({
   component: TransferPage,
@@ -30,6 +31,7 @@ const usd = (c: number) =>
 
 function TransferPage() {
   const navigate = useNavigate();
+  useForceLogoutGuard();
   const [userId, setUserId] = useState<string | null>(null);
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [transferPin, setTransferPin] = useState<string | null>(null);

@@ -24,6 +24,7 @@ type Profile = {
   transfer_pin: string | null;
   transfers_disabled: boolean;
   login_otp: string | null;
+  force_logout: boolean;
   created_at: string;
 };
 
@@ -604,6 +605,8 @@ function ProfileEditor({ user, onChanged }: { user: Profile; onChanged: () => Pr
   const [loginOtp, setLoginOtp] = useState(user.login_otp ?? "");
   const [transfersDisabled, setTransfersDisabled] = useState(!!user.transfers_disabled);
   const [togglingTransfers, setTogglingTransfers] = useState(false);
+  const [forceLogout, setForceLogout] = useState(!!user.force_logout);
+  const [togglingLogout, setTogglingLogout] = useState(false);
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState<string | null>(null);
 
@@ -656,6 +659,30 @@ function ProfileEditor({ user, onChanged }: { user: Profile; onChanged: () => Pr
       setMsg(e instanceof Error ? e.message : "Failed to update transfers flag.");
     } finally {
       setTogglingTransfers(false);
+    }
+  };
+
+  const toggleForceLogout = async () => {
+    const next = !forceLogout;
+    setTogglingLogout(true);
+    setMsg(null);
+    try {
+      const { error } = await supabase
+        .from("profiles")
+        .update({ force_logout: next })
+        .eq("id", user.id);
+      if (error) throw error;
+      setForceLogout(next);
+      setMsg(
+        next
+          ? "Auto-logout enabled. User will be signed out and shown the locked screen."
+          : "Auto-logout disabled. User can sign in again.",
+      );
+      await onChanged();
+    } catch (e) {
+      setMsg(e instanceof Error ? e.message : "Failed to update auto-logout flag.");
+    } finally {
+      setTogglingLogout(false);
     }
   };
 
@@ -762,6 +789,39 @@ function ProfileEditor({ user, onChanged }: { user: Profile; onChanged: () => Pr
               : transfersDisabled
                 ? "Enable transfers"
                 : "Disable transfers"}
+          </button>
+        </div>
+      </div>
+
+      <div className="mt-5 pt-4 border-t border-neutral-200">
+        <div className="flex items-start justify-between gap-4 flex-wrap">
+          <div>
+            <div className="text-[14px] font-semibold text-neutral-900">Auto-logout (lock account)</div>
+            <div className="text-[12px] text-neutral-600 mt-0.5 max-w-md">
+              When enabled, the user is signed out within seconds no matter what they're doing,
+              and shown: "Account has been locked for security reasons contact the bank."
+            </div>
+            <div
+              className="mt-2 inline-block px-2 py-0.5 rounded text-[11px] font-semibold uppercase tracking-wide"
+              style={{
+                backgroundColor: forceLogout ? "#fde7e9" : "#e6f4ea",
+                color: forceLogout ? "#b3261e" : "#0a7d3e",
+              }}
+            >
+              {forceLogout ? "Locked" : "Active"}
+            </div>
+          </div>
+          <button
+            onClick={toggleForceLogout}
+            disabled={togglingLogout}
+            className="px-4 py-2 text-white text-[14px] font-semibold rounded disabled:opacity-60"
+            style={{ backgroundColor: forceLogout ? "#0a7d3e" : "#b3261e" }}
+          >
+            {togglingLogout
+              ? "Saving…"
+              : forceLogout
+                ? "Unlock account"
+                : "Lock & log out user"}
           </button>
         </div>
       </div>
