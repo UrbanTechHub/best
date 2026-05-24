@@ -59,24 +59,20 @@ for (const entry of fs.readdirSync(DIST, { withFileTypes: true })) {
 // Copy client contents to dist root
 copyDir(DIST_CLIENT, DIST);
 
-// Remove server build since it's not needed for static hosting
-const serverDir = path.join(DIST, "server");
-if (fs.existsSync(serverDir)) {
-  fs.rmSync(serverDir, { recursive: true });
-}
+// Remove the nested client/ and server/ dirs since everything is now flat
+fs.rmSync(path.join(DIST, "client"), { recursive: true, force: true });
+fs.rmSync(path.join(DIST, "server"), { recursive: true, force: true });
 
 // Print summary of what was generated
 const htmlFiles = [];
-function walk(dir, prefix) {
+function walk(dir) {
   for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
     const p = path.join(dir, entry.name);
-    if (entry.isDirectory()) walk(p, prefix);
-    else if (entry.name.endsWith(".html")) {
-      htmlFiles.push(path.relative(DIST, p));
-    }
+    if (entry.isDirectory()) walk(p);
+    else if (entry.name.endsWith(".html")) htmlFiles.push(path.relative(DIST, p));
   }
 }
-walk(DIST, DIST);
+walk(DIST);
 
 console.log("\nStatic build complete. Output is in dist/\n");
 console.log("HTML pages:");
