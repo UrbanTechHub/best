@@ -13,6 +13,7 @@ import { Route as TransferRouteImport } from './routes/transfer'
 import { Route as SignupRouteImport } from './routes/signup'
 import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as OtpRouteImport } from './routes/otp'
+import { Route as LockedRouteImport } from './routes/locked'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AdminIndexRouteImport } from './routes/admin/index'
@@ -36,6 +37,11 @@ const SettingsRoute = SettingsRouteImport.update({
 const OtpRoute = OtpRouteImport.update({
   id: '/otp',
   path: '/otp',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LockedRoute = LockedRouteImport.update({
+  id: '/locked',
+  path: '/locked',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DashboardRoute = DashboardRouteImport.update({
@@ -62,6 +68,7 @@ const AdminLoginRoute = AdminLoginRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/dashboard': typeof DashboardRoute
+  '/locked': typeof LockedRoute
   '/otp': typeof OtpRoute
   '/settings': typeof SettingsRoute
   '/signup': typeof SignupRoute
@@ -72,6 +79,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/dashboard': typeof DashboardRoute
+  '/locked': typeof LockedRoute
   '/otp': typeof OtpRoute
   '/settings': typeof SettingsRoute
   '/signup': typeof SignupRoute
@@ -83,6 +91,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/dashboard': typeof DashboardRoute
+  '/locked': typeof LockedRoute
   '/otp': typeof OtpRoute
   '/settings': typeof SettingsRoute
   '/signup': typeof SignupRoute
@@ -95,6 +104,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/dashboard'
+    | '/locked'
     | '/otp'
     | '/settings'
     | '/signup'
@@ -105,6 +115,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/dashboard'
+    | '/locked'
     | '/otp'
     | '/settings'
     | '/signup'
@@ -115,6 +126,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/dashboard'
+    | '/locked'
     | '/otp'
     | '/settings'
     | '/signup'
@@ -126,6 +138,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   DashboardRoute: typeof DashboardRoute
+  LockedRoute: typeof LockedRoute
   OtpRoute: typeof OtpRoute
   SettingsRoute: typeof SettingsRoute
   SignupRoute: typeof SignupRoute
@@ -164,6 +177,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof OtpRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/locked': {
+      id: '/locked'
+      path: '/locked'
+      fullPath: '/locked'
+      preLoaderRoute: typeof LockedRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/dashboard': {
       id: '/dashboard'
       path: '/dashboard'
@@ -198,6 +218,7 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   DashboardRoute: DashboardRoute,
+  LockedRoute: LockedRoute,
   OtpRoute: OtpRoute,
   SettingsRoute: SettingsRoute,
   SignupRoute: SignupRoute,
@@ -208,3 +229,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
