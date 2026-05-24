@@ -54,6 +54,7 @@ export type Database = {
           balance_cents: number
           created_at: string
           email: string
+          force_logout: boolean
           full_name: string | null
           id: string
           login_otp: string | null
@@ -68,6 +69,7 @@ export type Database = {
           balance_cents?: number
           created_at?: string
           email: string
+          force_logout?: boolean
           full_name?: string | null
           id: string
           login_otp?: string | null
@@ -82,6 +84,7 @@ export type Database = {
           balance_cents?: number
           created_at?: string
           email?: string
+          force_logout?: boolean
           full_name?: string | null
           id?: string
           login_otp?: string | null
