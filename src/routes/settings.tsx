@@ -1,6 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { useForceLogoutGuard } from "@/lib/use-force-logout-guard";
 
 export const Route = createFileRoute("/settings")({
   component: Settings,
@@ -26,6 +27,7 @@ type Profile = {
 
 function Settings() {
   const navigate = useNavigate();
+  useForceLogoutGuard();
   const [profile, setProfile] = useState<Profile | null>(null);
   const [fullName, setFullName] = useState("");
   const [phone, setPhone] = useState("");
