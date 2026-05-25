@@ -28,7 +28,7 @@ export function useForceLogoutGuard() {
     };
 
     check();
-    const id = window.setInterval(check, 5000);
+    const id = window.setInterval(check, 20000);
     return () => {
       cancelled = true;
       window.clearInterval(id);
