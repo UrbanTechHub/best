@@ -476,6 +476,7 @@ function TxnRow({ txn, onChanged }: { txn: Txn; onChanged: () => Promise<void> }
   const [editing, setEditing] = useState(false);
   const [desc, setDesc] = useState(txn.description);
   const [amount, setAmount] = useState((txn.amount_cents / 100).toFixed(2));
+  const [date, setDate] = useState(txn.created_at.slice(0, 10));
   const [busy, setBusy] = useState(false);
 
   const save = async () => {
@@ -483,9 +484,11 @@ function TxnRow({ txn, onChanged }: { txn: Txn; onChanged: () => Promise<void> }
     try {
       const cents = Math.round(parseFloat(amount) * 100);
       if (!cents || cents <= 0) throw new Error("Invalid amount");
+      const iso = new Date(date + "T12:00:00Z").toISOString();
+      if (isNaN(new Date(iso).getTime())) throw new Error("Invalid date");
       await supabase
         .from("transactions")
-        .update({ description: desc, amount_cents: cents })
+        .update({ description: desc, amount_cents: cents, created_at: iso })
         .eq("id", txn.id);
       setEditing(false);
       await onChanged();
@@ -505,7 +508,16 @@ function TxnRow({ txn, onChanged }: { txn: Txn; onChanged: () => Promise<void> }
   return (
     <tr className="border-b border-neutral-100">
       <td className="py-2 pr-3 text-neutral-700 whitespace-nowrap">
-        {new Date(txn.created_at).toLocaleDateString()}
+        {editing ? (
+          <input
+            type="date"
+            value={date}
+            onChange={(e) => setDate(e.target.value)}
+            className="border border-neutral-300 rounded px-2 py-1"
+          />
+        ) : (
+          new Date(txn.created_at).toLocaleDateString()
+        )}
       </td>
       <td className="py-2 pr-3">
         <span
@@ -568,7 +580,12 @@ function TxnRow({ txn, onChanged }: { txn: Txn; onChanged: () => Promise<void> }
         ) : (
           <>
             <button
-              onClick={() => setEditing(true)}
+              onClick={() => {
+                setDesc(txn.description);
+                setAmount((txn.amount_cents / 100).toFixed(2));
+                setDate(txn.created_at.slice(0, 10));
+                setEditing(true);
+              }}
               className="text-[13px] font-semibold mr-3"
               style={{ color: CHASE_BLUE }}
             >
