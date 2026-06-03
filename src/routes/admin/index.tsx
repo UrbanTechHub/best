@@ -380,8 +380,8 @@ function UserDetail({
         )}
       </div>
 
-      <div className="mt-6 grid sm:grid-cols-[1fr_1fr_auto_auto] gap-3 items-end bg-neutral-50 p-4 rounded border border-neutral-200">
-        <label className="block sm:col-span-2">
+      <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-[1fr_1fr_auto_auto] gap-3 items-end bg-neutral-50 p-3 sm:p-4 rounded border border-neutral-200">
+        <label className="block sm:col-span-2 lg:col-span-2">
           <span className="text-[13px] text-neutral-700">Account</span>
           <select
             value={accountId}
@@ -418,7 +418,7 @@ function UserDetail({
         <button
           onClick={() => apply("credit")}
           disabled={busy}
-          className="px-4 py-2 text-white text-[14px] font-semibold rounded disabled:opacity-60"
+          className="px-4 py-2 text-white text-[14px] font-semibold rounded disabled:opacity-60 w-full lg:w-auto"
           style={{ backgroundColor: "#0a7d3e" }}
         >
           Credit
@@ -426,7 +426,7 @@ function UserDetail({
         <button
           onClick={() => apply("debit")}
           disabled={busy}
-          className="px-4 py-2 text-white text-[14px] font-semibold rounded disabled:opacity-60"
+          className="px-4 py-2 text-white text-[14px] font-semibold rounded disabled:opacity-60 w-full lg:w-auto"
           style={{ backgroundColor: "#b3261e" }}
         >
           Debit
