@@ -844,6 +844,81 @@ function ProfileEditor({ user, onChanged }: { user: Profile; onChanged: () => Pr
           </button>
         </div>
       </div>
+      <PasswordResetSection userId={user.id} email={user.email} />
+    </div>
+  );
+}
+
+function PasswordResetSection({ userId, email }: { userId: string; email: string }) {
+  const resetFn = useServerFn(adminResetUserPassword);
+  const [pwd, setPwd] = useState("");
+  const [confirm, setConfirm] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [msg, setMsg] = useState<string | null>(null);
+
+  const submit = async () => {
+    setMsg(null);
+    if (pwd.length < 8) {
+      setMsg("Password must be at least 8 characters.");
+      return;
+    }
+    if (pwd !== confirm) {
+      setMsg("Passwords do not match.");
+      return;
+    }
+    setBusy(true);
+    try {
+      await resetFn({ data: { userId, password: pwd } });
+      setMsg(`Password updated for ${email}.`);
+      setPwd("");
+      setConfirm("");
+    } catch (e) {
+      setMsg(e instanceof Error ? e.message : "Failed to reset password.");
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <div className="mt-5 pt-4 border-t border-neutral-200">
+      <div className="text-[14px] font-semibold text-neutral-900">Reset user password</div>
+      <div className="text-[12px] text-neutral-600 mt-0.5 max-w-md">
+        Set a new password for this user. Share it with them securely; they can change it later.
+      </div>
+      <div className="mt-3 grid sm:grid-cols-2 gap-3 max-w-xl">
+        <label className="block">
+          <span className="text-[13px] text-neutral-700">New password</span>
+          <input
+            type="text"
+            value={pwd}
+            onChange={(e) => setPwd(e.target.value)}
+            maxLength={72}
+            placeholder="Min 8 characters"
+            className="mt-1 w-full border border-neutral-300 rounded px-3 py-2 text-[15px] outline-none"
+          />
+        </label>
+        <label className="block">
+          <span className="text-[13px] text-neutral-700">Confirm password</span>
+          <input
+            type="text"
+            value={confirm}
+            onChange={(e) => setConfirm(e.target.value)}
+            maxLength={72}
+            className="mt-1 w-full border border-neutral-300 rounded px-3 py-2 text-[15px] outline-none"
+          />
+        </label>
+      </div>
+      <div className="mt-3 flex items-center gap-3">
+        <button
+          onClick={submit}
+          disabled={busy}
+          className="px-4 py-2 text-white text-[14px] font-semibold rounded disabled:opacity-60"
+          style={{ backgroundColor: CHASE_BLUE }}
+        >
+          {busy ? "Updating…" : "Update password"}
+        </button>
+        {msg && <span className="text-[13px] text-neutral-700">{msg}</span>}
+      </div>
     </div>
   );
 }
