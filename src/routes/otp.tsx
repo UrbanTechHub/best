@@ -81,8 +81,7 @@ function OtpPage() {
             Enter your identification code
           </h1>
           <p className="text-[15px] text-neutral-700 mt-3 leading-relaxed">
-            We sent a 6-digit code to the phone number ending in
-            <span className="font-semibold"> ••• 4421</span>. The code expires in 10 minutes.
+            We sent a 6-digit code to the phone number & email on the account. The code expires in 10 minutes.
           </p>
 
           <div className="mt-7 flex items-center justify-between gap-2">
