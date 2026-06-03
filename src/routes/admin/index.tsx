@@ -326,13 +326,13 @@ function UserDetail({
     .reduce((sum, a) => sum + a.balance_cents, 0);
 
   return (
-    <div className="p-6">
-      <div className="flex items-start justify-between gap-4 flex-wrap">
-        <div>
-          <h2 className="text-[22px] font-semibold text-neutral-900">
+    <div className="p-4 sm:p-6">
+      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 sm:gap-4">
+        <div className="min-w-0">
+          <h2 className="text-[20px] sm:text-[22px] font-semibold text-neutral-900 break-words">
             {user.full_name || "(no name)"}
           </h2>
-          <div className="text-[14px] text-neutral-600 mt-1">{user.email}</div>
+          <div className="text-[14px] text-neutral-600 mt-1 break-all">{user.email}</div>
           <div className="text-[13px] text-neutral-500 mt-1">
             Account {user.account_number} · {user.phone || "no phone"}
           </div>
@@ -340,9 +340,9 @@ function UserDetail({
             <div className="text-[13px] text-neutral-500 mt-0.5">{user.address}</div>
           )}
         </div>
-        <div className="text-right">
+        <div className="sm:text-right">
           <div className="text-[12px] uppercase tracking-wide text-neutral-500">Total deposits</div>
-          <div className="text-[32px] font-semibold" style={{ color: CHASE_BLUE }}>
+          <div className="text-[26px] sm:text-[32px] font-semibold" style={{ color: CHASE_BLUE }}>
             {usd(totalAssets)}
           </div>
         </div>
