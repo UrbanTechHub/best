@@ -196,7 +196,7 @@ function AdminDashboard() {
 
         {/* Detail panel */}
         <section
-          className={`bg-white rounded-lg shadow-sm min-h-[calc(100vh-130px)] lg:min-h-[calc(100vh-110px)] ${
+          className={`bg-white rounded-lg shadow-sm min-w-0 min-h-[calc(100vh-130px)] lg:min-h-[calc(100vh-110px)] ${
             selected ? "block" : "hidden lg:block"
           }`}
         >
