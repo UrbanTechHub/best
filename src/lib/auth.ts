@@ -5,6 +5,27 @@ export type Role = "admin" | "user";
 export async function signIn(email: string, password: string) {
   const { data, error } = await supabase.auth.signInWithPassword({ email, password });
   if (error) throw error;
+  // If the admin has locked this account, refuse to keep the session.
+  try {
+    const uid = data.user?.id;
+    if (uid) {
+      const { data: prof } = await supabase
+        .from("profiles")
+        .select("force_logout")
+        .eq("id", uid)
+        .maybeSingle();
+      if (prof && (prof as { force_logout: boolean }).force_logout) {
+        await supabase.auth.signOut();
+        throw new Error(
+          "Account has been locked for security reasons. Please contact the bank.",
+        );
+      }
+    }
+  } catch (e) {
+    if (e instanceof Error && e.message.startsWith("Account has been locked")) {
+      throw e;
+    }
+  }
   return data;
 }
 
