@@ -605,14 +605,7 @@ function TxnRow({ txn, onChanged }: { txn: Txn; onChanged: () => Promise<void> }
 
 function Logo() {
   return (
-    <svg viewBox="0 0 40 40" className="w-8 h-8">
-      <g fill="#fff">
-        <rect x="17" y="3" width="6" height="14" rx="1" />
-        <rect x="23" y="17" width="14" height="6" rx="1" />
-        <rect x="17" y="23" width="6" height="14" rx="1" />
-        <rect x="3" y="17" width="14" height="6" rx="1" />
-      </g>
-    </svg>
+    <img src={chaseLogo.url} alt="Chase" className="h-6 sm:h-7 w-auto" />
   );
 }
 
