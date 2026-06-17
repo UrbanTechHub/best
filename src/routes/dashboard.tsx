@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { signOut } from "@/lib/auth";
 import { useForceLogoutGuard } from "@/lib/use-force-logout-guard";
+import chaseLogo from "@/assets/chase-logo.png.asset.json";
 
 export const Route = createFileRoute("/dashboard")({
   component: Dashboard,
@@ -369,14 +370,12 @@ function TabItem({ label, icon, active }: { label: string; icon: React.ReactNode
 
 function ChaseLogo() {
   return (
-    <svg viewBox="0 0 40 40" className="w-8 h-8">
-      <g fill={CHASE_BLUE}>
-        <rect x="17" y="3" width="6" height="14" rx="1" />
-        <rect x="23" y="17" width="14" height="6" rx="1" />
-        <rect x="17" y="23" width="6" height="14" rx="1" />
-        <rect x="3" y="17" width="14" height="6" rx="1" />
-      </g>
-    </svg>
+    <span
+      className="inline-flex items-center justify-center rounded-md px-2 py-1"
+      style={{ backgroundColor: CHASE_BLUE }}
+    >
+      <img src={chaseLogo.url} alt="Chase" className="h-4 w-auto" />
+    </span>
   );
 }
 
