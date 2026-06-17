@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { getMyRoles, signOut } from "@/lib/auth";
 import { useServerFn } from "@tanstack/react-start";
 import { adminResetUserPassword } from "@/lib/admin.functions";
+import chaseLogo from "@/assets/chase-logo.png.asset.json";
 
 export const Route = createFileRoute("/admin/")({
   component: AdminDashboard,
