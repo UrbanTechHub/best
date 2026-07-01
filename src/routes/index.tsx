@@ -131,10 +131,6 @@ function Index() {
           <Link to="/signup" className="underline font-medium" style={{ color: CHASE_BLUE }}>
             Open an account
           </Link>
-          <Divider />
-          <Link to="/admin/login" className="underline font-medium" style={{ color: CHASE_BLUE }}>
-            Admin
-          </Link>
         </div>
 
         <div className="pb-10 pt-5 text-center text-[13px] sm:text-[14px] text-neutral-600 leading-relaxed">
