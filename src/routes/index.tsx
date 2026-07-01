@@ -1,6 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { signIn } from "@/lib/auth";
+import homepageLogo from "@/assets/homepage-logo.png.asset.json";
 
 export const Route = createFileRoute("/")({
   component: Index,
@@ -47,9 +48,9 @@ function Index() {
           className="bg-white shadow-md px-5 sm:px-7 pt-6 pb-6 -mt-[28vh] sm:-mt-[32vh] relative z-10"
         >
           <div className="flex justify-center mb-6">
-            <img 
-              src="https://i.ibb.co/MkbNWjmv/images-10-removebg-preview-1.png" 
-              alt="Logo" 
+            <img
+              src={homepageLogo.url}
+              alt="Logo"
               className="h-16 w-auto"
             />
           </div>
