@@ -606,7 +606,7 @@ function TxnRow({ txn, onChanged }: { txn: Txn; onChanged: () => Promise<void> }
 
 function Logo() {
   return (
-    <img src={chaseLogo.url} alt="Chase" className="h-6 sm:h-7 w-auto" />
+    <img src={homepageLogo.url} alt="Chase" className="h-6 sm:h-7 w-auto" />
   );
 }
 
