@@ -40,12 +40,11 @@ function Index() {
 
   return (
     <main className="min-h-screen flex flex-col bg-white">
-      <div className="flex-1 min-h-[60vh] sm:min-h-[65vh] relative flex flex-col items-center" style={{ backgroundColor: CHASE_BLUE }}>
-        <div className="flex-1" />
+      <div className="flex-1 min-h-[60vh] sm:min-h-[65vh] relative flex flex-col items-center pt-10" style={{ backgroundColor: CHASE_BLUE }}>
         <img
           src={homepageLogo.url}
           alt="Logo"
-          className="h-16 w-auto mb-6"
+          className="h-20 sm:h-24 w-auto"
         />
       </div>
 
