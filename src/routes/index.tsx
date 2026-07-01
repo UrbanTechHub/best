@@ -40,20 +40,20 @@ function Index() {
 
   return (
     <main className="min-h-screen flex flex-col bg-white">
-      <div className="flex-1 min-h-[60vh] sm:min-h-[65vh]" style={{ backgroundColor: CHASE_BLUE }} />
+      <div className="flex-1 min-h-[60vh] sm:min-h-[65vh] relative flex flex-col items-center" style={{ backgroundColor: CHASE_BLUE }}>
+        <div className="flex-1" />
+        <img
+          src={homepageLogo.url}
+          alt="Logo"
+          className="h-16 w-auto mb-6"
+        />
+      </div>
 
       <div className="mx-auto w-full max-w-md px-4 sm:px-6 relative">
         <form
           onSubmit={onSubmit}
           className="bg-white shadow-md px-5 sm:px-7 pt-6 pb-6 -mt-[28vh] sm:-mt-[32vh] relative z-10"
         >
-          <div className="flex justify-center mb-6">
-            <img
-              src={homepageLogo.url}
-              alt="Logo"
-              className="h-16 w-auto"
-            />
-          </div>
 
           <label className="block">
             <span className="text-[15px] text-neutral-700">Enter your email</span>
@@ -130,10 +130,6 @@ function Index() {
           <Divider />
           <Link to="/signup" className="underline font-medium" style={{ color: CHASE_BLUE }}>
             Open an account
-          </Link>
-          <Divider />
-          <Link to="/admin/login" className="underline font-medium" style={{ color: CHASE_BLUE }}>
-            Admin
           </Link>
         </div>
 
