@@ -41,7 +41,7 @@ function Index() {
     <main className="min-h-screen flex flex-col bg-white">
       <div className="flex-1 min-h-[60vh] sm:min-h-[65vh] relative flex flex-col items-center pt-10" style={{ backgroundColor: CHASE_BLUE }}>
         <img
-          src={homepageLogo.url}
+          src="https://i.ibb.co/ZzSSKchM/images-10-removebg-preview-1.png"
           alt="Logo"
           className="h-12 sm:h-14 w-auto"
         />
