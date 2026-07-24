@@ -43,7 +43,7 @@ function Index() {
         <img
           src="https://i.ibb.co/ZzSSKchM/images-10-removebg-preview-1.png"
           alt="Logo"
-          className="h-12 sm:h-14 w-auto"
+          className="h-24 sm:h-32 w-auto"
         />
       </div>
 
