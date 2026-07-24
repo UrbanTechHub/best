@@ -1,7 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { signIn } from "@/lib/auth";
-import homepageLogo from "@/assets/homepage-logo.png.asset.json";
 
 export const Route = createFileRoute("/")({
   component: Index,
