@@ -44,7 +44,7 @@ function Index() {
         <img
           src={homepageLogo.url}
           alt="Logo"
-          className="h-20 sm:h-24 w-auto"
+          className="h-12 sm:h-14 w-auto"
         />
       </div>
 
