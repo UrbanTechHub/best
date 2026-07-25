@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { signOut } from "@/lib/auth";
 import { useForceLogoutGuard } from "@/lib/use-force-logout-guard";
-import chaseLogo from "@/assets/chase-logo.png.asset.json";
+
 
 export const Route = createFileRoute("/dashboard")({
   component: Dashboard,
